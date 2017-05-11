@@ -60,9 +60,22 @@
 ;; copied from clojure.contrib.lazy-xml
 (def ^{:private true}
      escape-xml-map
-     (zipmap "'<>\"&" (map #(str \& % \;) '[apos lt gt quot amp])))
+     (zipmap "'<>\"&"
+             (map #(str \& % \;) '[apos lt gt quot amp])))
+
+(def valid-chars
+  (->>
+    (concat
+      [0x9 0xA 0xD]
+      (range 0x20 0xD800)
+      (range 0xE000 0xFFFE))
+    (map char)
+    (set)))
+
 (defn- escape-xml [text]
-  (apply str (map #(escape-xml-map % %) text)))
+   (apply str
+          (filter valid-chars
+                  (map #(escape-xml-map % %) text))))
 
 (def ^:dynamic *var-context*)
 (def ^:dynamic *depth*)
